@@ -28,10 +28,6 @@ const Dashboard = () => {
           const response = await axios.get(`${url}/stats/pending/${data.hospital_id}`)
           setStats(response.data)
         }
-        if(data.user_type === "user"){
-          const response = await axios.get(`${url}/stats/rejected/${data.hospital_id}`)
-          setStats(response.data)
-        }
       } catch (error) {
         console.log(error)
       }  
@@ -150,43 +146,8 @@ const Dashboard = () => {
               <i className="iconoir-activity text-3xl text-blue-500" />
               <div className="ml-4">
                 <p className="text-gray-600 uppercase">
-                  Total Admin of Hospital
+                  Total Admited Patients
                 </p>
-                <p className="text-2xl font-bold">{stats.adminUsersCount}</p>
-              </div>
-            </div>
-          </div>
-          <div className="bg-white p-4 rounded shadow">
-            <div className="flex items-center">
-              <i className="iconoir-user text-3xl text-green-500" />
-              <div className="ml-4">
-                <p className="text-gray-600 uppercase">
-                  Total HEALTH FACILITY Officer
-                </p>
-                <p className="text-2xl font-bold">{stats.userUsersCount}</p>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-      {data.user_type === "user" && (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
-          <div className="bg-white p-4 rounded shadow">
-            <div className="flex items-center">
-              <i className="iconoir-activity text-3xl text-blue-500" />
-              <div className="ml-4">
-                <p className="text-gray-600 uppercase">
-                  Total Approved Results
-                </p>
-                <p className="text-2xl font-bold">{stats.ApprovedTestCount}</p>
-              </div>
-            </div>
-          </div>
-          <div className="bg-white p-4 rounded shadow">
-            <div className="flex items-center">
-              <i className="iconoir-user text-3xl text-green-500" />
-              <div className="ml-4">
-                <p className="text-gray-600 uppercase">Total Pending Results</p>
                 <p className="text-2xl font-bold">{stats.pendingTestsCount}</p>
               </div>
             </div>
@@ -195,16 +156,13 @@ const Dashboard = () => {
             <div className="flex items-center">
               <i className="iconoir-user text-3xl text-green-500" />
               <div className="ml-4">
-                <p className="text-gray-600 uppercase">
-                  Total Rejected Results
-                </p>
+                <p className="text-gray-600 uppercase">Total Treated Patient</p>
                 <p className="text-2xl font-bold">{stats.rejectedTestsCount}</p>
               </div>
             </div>
           </div>
         </div>
       )}
-
       {data.user_type === "root" && (
         <>
           <div className="flex justify-between items-center mb-4">

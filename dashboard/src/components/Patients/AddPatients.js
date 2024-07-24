@@ -1,28 +1,39 @@
-import React, {useState} from 'react'
-import { useNavigate } from 'react-router-dom';
-import { url } from '../../Utills/API';
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { url } from "../../Utills/API";
 import axios from "axios";
 
-
 const AddPatients = () => {
-  const navigate = useNavigate()
-  const data = JSON.parse(localStorage.getItem("user"))
-  const [values, setValues] =useState({
+  const navigate = useNavigate();
+  const data = JSON.parse(localStorage.getItem("user"));
+  const [values, setValues] = useState({
     first_name: "",
     last_name: "",
     residence: "",
     birth_date: "",
     gender: "",
-  })
+    pregnancy: null,
+  });
 
-   const handleChange = ({ currentTarget: input }) => {
-     setValues({ ...values, [input.name]: input.value });
-   };
+  const handleChange = ({ currentTarget: input }) => {
+    setValues({ ...values, [input.name]: input.value });
+  };
 
-   const handleSubmit = async (e) =>{
+  const handleRadioChange = ({ currentTarget: input }) => {
+    setValues({ ...values, pregnancy: input.value === "true" });
+  };
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const {first_name, last_name, gender, residence, birth_date} = values
+      const {
+        first_name,
+        last_name,
+        gender,
+        residence,
+        birth_date,
+        pregnancy,
+      } = values;
       await axios
         .post(`${url}/patient`, {
           first_name,
@@ -30,6 +41,7 @@ const AddPatients = () => {
           gender,
           residence,
           birth_date,
+          pregnancy,
           hospital_id: data.hospital_id,
         })
         .then((res) => {
@@ -37,9 +49,10 @@ const AddPatients = () => {
           navigate("/main/patient");
         });
     } catch (error) {
-      console.log(error)
+      console.log(error);
     }
-   }
+  };
+
   return (
     <>
       <section className="py-1 bg-blueGray-50">
@@ -164,6 +177,52 @@ const AddPatients = () => {
                         />
                       </div>
                     </div>
+                    <div className="w-full lg:w-6/12 px-4">
+                      <div className="relative w-full mb-3">
+                        <label
+                          className="block uppercase text-blueGray-600 text-xs font-bold mb-2"
+                          htmlFor="can-be-pregnant"
+                        >
+                          Can Be Pregnant
+                        </label>
+                        <div>
+                          <div className="flex items-center mb-4">
+                            <input
+                              id="pregnant-yes"
+                              type="radio"
+                              name="pregnancy"
+                              value="true"
+                              checked={values.pregnancy === true}
+                              onChange={handleRadioChange}
+                              className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500"
+                            />
+                            <label
+                              htmlFor="pregnant-yes"
+                              className="ml-2 text-sm font-medium text-gray-900"
+                            >
+                              Yes
+                            </label>
+                          </div>
+                          <div className="flex items-center">
+                            <input
+                              id="pregnant-no"
+                              type="radio"
+                              name="pregnancy"
+                              value="false"
+                              checked={values.pregnancy === false}
+                              onChange={handleRadioChange}
+                              className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500"
+                            />
+                            <label
+                              htmlFor="pregnant-no"
+                              className="ml-2 text-sm font-medium text-gray-900"
+                            >
+                              No
+                            </label>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 </form>
               </div>
@@ -173,6 +232,6 @@ const AddPatients = () => {
       </section>
     </>
   );
-}
+};
 
-export default AddPatients
+export default AddPatients;

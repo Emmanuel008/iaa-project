@@ -13,6 +13,6 @@ router.get("/pending/:id", getUsersAndPendingTestsCountByHospitalId)
 
 router.get("/rejected/:id", getRejectedTestsCountByHospitalId)
 
-router.get("/malnutrition/:id/:malnutritionType", getMalnutritionStats);
+router.get("/malnutrition/:id?/:malnutritionType", getMalnutritionStats);
 
 module.exports = router;

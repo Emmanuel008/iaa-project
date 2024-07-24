@@ -1,9 +1,10 @@
-import React, {useState, useEffect} from 'react'
-import axios from 'axios';
-import { url } from '../../../Utills/API';
-import { useNavigate } from 'react-router-dom';
-const ChooseHopistal = () => {
-    const navigate = useNavigate();
+import React, { useState, useEffect } from "react";
+import axios from "axios";
+import { url } from "../../../Utills/API";
+import { useNavigate } from "react-router-dom";
+
+const ChooseHospital = () => {
+  const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage] = useState(10);
@@ -28,6 +29,7 @@ const ChooseHopistal = () => {
 
   // Change page
   const paginate = (pageNumber) => setCurrentPage(pageNumber);
+
   useEffect(() => {
     const fetchData = async () => {
       const response = await axios.get(`${url}/hospital`);
@@ -36,10 +38,17 @@ const ChooseHopistal = () => {
     fetchData();
   }, []);
 
-  const handleChoose = (data)=>{
-    localStorage.setItem("hospital",JSON.stringify(data));
+  const handleChoose = (data) => {
+    localStorage.setItem("hospital", JSON.stringify(data));
+    localStorage.setItem("allHospital", JSON.stringify({ data: false }));
     navigate("/main/choosereporttype");
-  }
+  };
+
+  const handleViewAll = () => {
+    localStorage.setItem("allHospital", JSON.stringify({data: true}))
+    navigate("/main/choosereporttype");
+  };
+
   return (
     <div className="pt-10 pl-4 pr-4">
       <div className="flex justify-between items-center mb-4">
@@ -52,6 +61,13 @@ const ChooseHopistal = () => {
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
+          <button
+            type="button"
+            className="text-sm bg-blue-500 hover:bg-blue-700 text-white py-1 px-2 rounded focus:outline-none focus:shadow-outline"
+            onClick={handleViewAll}
+          >
+            View All Hospitals
+          </button>
         </div>
       </div>
       <div className="overflow-x-auto">
@@ -103,7 +119,7 @@ const ChooseHopistal = () => {
       </div>
     </div>
   );
-}
+};
 
 const Pagination = ({ rowsPerPage, totalRows, paginate, currentPage }) => {
   const pageNumbers = [];
@@ -155,4 +171,5 @@ const Pagination = ({ rowsPerPage, totalRows, paginate, currentPage }) => {
     </nav>
   );
 };
-export default ChooseHopistal
+
+export default ChooseHospital;

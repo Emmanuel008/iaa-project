@@ -6,26 +6,33 @@ module.exports = (sequelize, DataTypes) => {
         autoIncrement: true,
       },
       patient_type: {
-        type: DataTypes.STRING,
+        type: DataTypes.ENUM(
+          "6 - 23 months",
+          "24 - 59 months",
+          "5 - 9 years",
+          "10 - 15 years",
+          "15+ years",
+          "preganant women",
+          "post partum women"
+        ),
         allowNull: false,
       },
       height: {
-        type: DataTypes.INTEGER,
+        type: DataTypes.FLOAT,
         allowNull: false,
       },
       weight: {
-        type: DataTypes.INTEGER,
+        type: DataTypes.FLOAT,
         allowNull: false,
       },
       date: {
         type: DataTypes.DATE,
         allowNull: false,
       },
-      patient_status: {
+      admiting_status: {
         type: DataTypes.ENUM("admited", "released"),
-        allowNull: true,
+        allowNull: false,
       },
-      
     });
     return AdmitingInfo
 };

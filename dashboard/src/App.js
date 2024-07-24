@@ -1,4 +1,4 @@
-import React, {useEffect} from "react";
+import React from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Login from "./pages/Login"
 import Main from "./pages/Main";
@@ -17,10 +17,8 @@ import AddPatients from "./components/Patients/AddPatients";
 import AdmitPatient from "./components/Patients/AdmitPatient";
 import AdmitedPatient from "./components/Patients/AdmitedPatient";
 import TestAndTreatement from "./components/Patients/TestAndTreatement";
-import Pending from "./components/Approval/Pending";
-import Approve from "./components/Approval/Approve";
-import RejectedPatientData from "./components/Approval/RejectedPatientData";
-import EditRejectedPatient from "./components/Approval/EditRejectedPatient";
+import TreatedPatients from "./components/TreatedPatients/TreatedPatients";
+import ViewPatient from "./components/TreatedPatients/ViewPatient";
 import ChooseHopistal from "./components/Report/RootAdminReport/ChooseHopistal";
 import ChooseReportType from "./components/Report/ChooseReportType";
 import ViewReport from "./components/Report/ViewReport";
@@ -55,34 +53,33 @@ function App() {
               </>
             )}
             {/* admin and user */}
-            {data && (data.user_type === "admin" || data.user_type === "user") && (
-              <>
-                <Route path="/main/patient" element={<Patient />} />
-                <Route path="/main/addpatient" element={<AddPatients />} />
-                <Route path="/main/admitpatient" element={<AdmitPatient />} />
-                <Route
-                  path="/main/admitedpatient"
-                  element={<AdmitedPatient />}
-                />
-                <Route
-                  path="/main/test_treatment"
-                  element={<TestAndTreatement />}
-                />
-                <Route path="/main/pending" element={<Pending />} />
-                <Route path="/main/approveresult" element={<Approve />} />
-                <Route
-                  path="rejectedapproval"
-                  element={<RejectedPatientData />}
-                />
-                <Route
-                  path="/main/editrejected"
-                  element={<EditRejectedPatient />}
-                />
-              </>
-            )}
+            {data &&
+              (data.user_type === "admin" || data.user_type === "user") && (
+                <>
+                  <Route path="/main/patient" element={<Patient />} />
+                  <Route path="/main/addpatient" element={<AddPatients />} />
+                  <Route path="/main/admitpatient" element={<AdmitPatient />} />
+                  <Route
+                    path="/main/admitedpatient"
+                    element={<AdmitedPatient />}
+                  />
+                  <Route
+                    path="/main/test_treatment"
+                    element={<TestAndTreatement />}
+                  />
+                  <Route
+                    path="/main/treatedpatient"
+                    element={<TreatedPatients />}
+                  />
+                  <Route path="/main/tested" element={<ViewPatient />} />
+                </>
+              )}
             {/*  all users */}
-            <Route path="/main/choosereporttype" element={<ChooseReportType/>} />
-            <Route path="/main/report" element={<ViewReport/>} />
+            <Route
+              path="/main/choosereporttype"
+              element={<ChooseReportType />}
+            />
+            <Route path="/main/report" element={<ViewReport />} />
             <Route path="/main/profile" element={<Profile />} />
             <Route path="/main/settings" element={<Settings />}>
               <Route path="/main/settings" element={<EditProfile />} />

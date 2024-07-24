@@ -1,11 +1,18 @@
 const router = require("express").Router();
 
 
-const {create, updateInfo, deleteInfo, getAll} = require("../controllers/admitingController")
+const {
+  create,
+  updateInfo,
+  deleteInfo,
+  getAllAdmited,
+  getReleased,
+} = require("../controllers/admitingController");
 
 router.post("/", create);
 
-router.get("/:id", getAll)
+router.get("/admited/:id", getAllAdmited);
+router.get("/released/:id", getReleased);
 
 router.put("/:id", updateInfo)
 

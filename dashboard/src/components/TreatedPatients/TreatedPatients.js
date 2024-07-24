@@ -3,7 +3,7 @@ import axios from 'axios';
 import { url } from '../../Utills/API';
 import { useNavigate } from 'react-router-dom';
 
-const RejectedPatientData = () => {
+const TreatedPatients = () => {
   const navigate = useNavigate();
   const user = JSON.parse(localStorage.getItem("user"));
   const [searchTerm, setSearchTerm] = useState("");
@@ -16,7 +16,7 @@ const RejectedPatientData = () => {
     const fetchData = async () => {
       try {
         const res = await axios.get(
-          `${url}/testresulttreatment/${user.hospital_id}/${"rejected"}`
+          `${url}/admiting/released/${user.hospital_id}`
         );
         console.log(res.data);
         setRows(res.data);
@@ -41,15 +41,15 @@ const RejectedPatientData = () => {
 
   const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
-  const handleEdit = (data) => {
-    localStorage.setItem("edit", JSON.stringify(data));
-    navigate("/main/editrejected");
+  const handleView = (data) => {
+    localStorage.setItem("tested", JSON.stringify(data));
+    navigate("/main/tested");
   };
 
   return (
     <div className="pt-10 pl-4 pr-4">
       <div className="flex justify-between items-center mb-4">
-        <h1 className="text-xl">Rejected Approval</h1>
+        <h1 className="text-xl">Tested Patients</h1>
         <div className="flex gap-2">
           <input
             type="text"
@@ -65,9 +65,10 @@ const RejectedPatientData = () => {
           <thead>
             <tr>
               <th className="text-left p-3 px-5">Name</th>
+              <th className="text-left p-3 px-5">Card No</th>
               <th className="text-left p-3 px-5">Date</th>
-              <th className="text-left p-3 px-5">Comment</th>
               <th className="text-left p-3 px-5">Status</th>
+              <th className="text-left p-3 px-5">Patient Type</th>
               <th className="text-left p-3 px-5">Actions</th>
             </tr>
           </thead>
@@ -82,18 +83,19 @@ const RejectedPatientData = () => {
                 <td className="p-3 px-5">
                   {`${row.patient.first_name} ${row.patient.last_name}`}
                 </td>
+                <td className="p-3 px-5">{row.patient_card_no}</td>
                 <td className="p-3 px-5">
                   {new Date(row.updatedAt).toLocaleString()}
                 </td>
-                <td className="p-3 px-5">{row.comment}</td>
-                <td className="p-3 px-5">{row.status}</td>
+                <td className="p-3 px-5">{row.admiting_status}</td>
+                <td className="p-3 px-5">{row.patient_type}</td>
                 <td className="p-3 px-5 flex">
                   <button
                     type="button"
-                    onClick={() => handleEdit(row)}
-                    className="mr-2 text-sm bg-blue-500 hover:bg-blue-700 text-white py-1 px-2 rounded focus:outline-none focus:shadow-outline"
+                    onClick={() => handleView(row)}
+                    className="mr-2 text-sm bg-green-500 hover:bg-green-700 text-white py-1 px-2 rounded focus:outline-none focus:shadow-outline"
                   >
-                    Edit
+                    View
                   </button>
                 </td>
               </tr>
@@ -111,7 +113,7 @@ const RejectedPatientData = () => {
       </div>
     </div>
   );
-}
+};
 const Pagination = ({ rowsPerPage, totalRows, paginate, currentPage }) => {
   const pageNumbers = [];
   const totalPages = Math.ceil(totalRows / rowsPerPage);
@@ -162,4 +164,4 @@ const Pagination = ({ rowsPerPage, totalRows, paginate, currentPage }) => {
     </nav>
   );
 };
-export default RejectedPatientData
+export default TreatedPatients;

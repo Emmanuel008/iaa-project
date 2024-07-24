@@ -25,6 +25,10 @@ module.exports = (sequelize, DataTypes) =>{
         type: DataTypes.ENUM("male", "female"),
         allowNull: false,
       },
+      pregnancy:{
+        type: DataTypes.BOOLEAN,
+        defaultValue: false
+      }
     });
     return Patient;
 }
