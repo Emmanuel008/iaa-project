@@ -236,15 +236,18 @@ const ViewPatient = () => {
                 <h6 className="text-blueGray-400 text-sm mt-3 mb-6 font-bold uppercase">
                   Treatments
                 </h6>
-                <div>
-                  <textarea
-                    id="message"
-                    rows="4"
-                    disabled
-                    value={result.length > 0 ? result[0].treatment : ""}
-                    className="block p-2.5 w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                  ></textarea>
-                </div>
+                {result.length > 0 &&
+                  result.map((item, index) => (
+                    <div key={index} className="mb-3">
+                      <h6 className="mb-2 text-blueGray-400 text-sm mt-3 font-bold uppercase">
+                        {item.typeOfMalnutrition}
+                      </h6>
+                      <textarea
+                        className="block p-2.5 w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                        value={item.treatment}
+                      />
+                    </div>
+                  ))}
               </div>
             </div>
           </div>

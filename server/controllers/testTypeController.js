@@ -25,260 +25,490 @@ exports.createResults = async (req, res) => {
   try {
     const id = req.params.id;
 
-    const test = await AdmitingInfo.findOne({
+    const Test = await AdmitingInfo.findOne({
       where: { admit_id: id },
       include: [
-        { model: TestType, required: true },
-        { model: Patient, required: true },
+        {
+          model: TestType,
+          required: true,
+        },
+        {
+          model: Patient,
+          required: true,
+        },
       ],
     });
-
-    if (!test) {
-      return res.status(404).json({ error: "Test not found" });
-    }
-
-    const { birth_date: birthDate, gender } = test.patient;
-    const ageInMonths = moment().diff(moment(birthDate), "months");
-
-    const sdCategories = [
-      "neg3sd",
-      "neg2sd",
-      "neg1sd",
-      "sd0",
-      "sd1",
-      "sd2",
-      "sd3",
-    ];
-
-    const evaluateSD = async (value, row, typeOfTest, typeOfTestUsed) => {
-      const closestSD = sdCategories.reduce((a, b) =>
-        Math.abs(value - row[a]) < Math.abs(value - row[b]) ? a : b
-      );
-
-      const resultsMap = {
-        neg3sd: "severe",
-        neg2sd: "moderate",
-        neg1sd: "mild",
-        sd0: "normal",
-        sd1: "mild",
-        sd2: "moderate",
-        sd3: "severe",
-      };
-
-      await Results.create({
-        result: resultsMap[closestSD],
-        typeOfTest,
-        typeOfTestUsed,
-        admit_id: parseInt(id),
-      });
-    };
-
-    const processHeightWeight = async () => {
-      if (!test.test_types[0].weight_height || ageInMonths > 60) return;
-
-      const height = parseFloat(test.height);
-      if (isNaN(height))
+    // find the result depending on the test type
+    const birthdate = moment(Test.patient.birth_date);
+    const currentDate = moment();
+    const ageInMonths = currentDate.diff(birthdate, "months");
+    if (Test.test_types[0].weight_height && ageInMonths <= 60) {
+      const height = parseFloat(Test.height);
+      // Check if height is a valid number
+      if (isNaN(height)) {
         return res.status(400).json({ error: "Invalid height value" });
-
-      const [closestRow] = await HeightWeight.sequelize.query(
-        `SELECT * FROM height_weights WHERE gender = :gender ORDER BY ABS(height - :height) ASC LIMIT 1`,
+      }
+      const closestRow = await HeightWeight.sequelize.query(
+        `SELECT height, neg3sd, neg2sd, neg1sd, sd0, sd1, sd2, sd3
+         FROM height_weights
+         WHERE gender = :gender
+         ORDER BY ABS(height - :height) ASC
+         LIMIT 1`,
         {
-          replacements: { gender, height },
+          replacements: { gender: Test.patient.gender, height: height },
           type: QueryTypes.SELECT,
         }
       );
 
-      if (closestRow) {
-        const weight = parseFloat(test.weight);
-        if (isNaN(weight))
+      if (closestRow.length > 0) {
+        const row = closestRow[0];
+        const weight = parseFloat(Test.weight);
+
+        // Check if weight is a valid number
+        if (isNaN(weight)) {
           return res.status(400).json({ error: "Invalid weight value" });
+        }
 
-        await evaluateSD(
-          weight,
-          closestRow,
-          weight < closestRow.sd0
-            ? "Wasting"
-            : weight < closestRow.sd1
-            ? "No Malnutrition"
-            : "Obesity",
-          "Height/Weight"
+        const sdCategories = {
+          neg3sd: Math.abs(weight - row.neg3sd),
+          neg2sd: Math.abs(weight - row.neg2sd),
+          neg1sd: Math.abs(weight - row.neg1sd),
+          sd0: Math.abs(weight - row.sd0),
+          sd1: Math.abs(weight - row.sd1),
+          sd2: Math.abs(weight - row.sd2),
+          sd3: Math.abs(weight - row.sd3),
+        };
+
+        const closestSD = Object.keys(sdCategories).reduce((a, b) =>
+          sdCategories[a] < sdCategories[b] ? a : b
         );
+        switch (closestSD) {
+          case "neg3sd":
+            await Results.create({
+              result: "severe",
+              typeOfTest: "Wasting",
+              typeOfTestUsed: "Height/Weight",
+              admit_id: parseInt(id),
+            });
+            break;
+          case "neg2sd":
+            await Results.create({
+              result: "moderate",
+              typeOfTest: "Wasting",
+              typeOfTestUsed: "Height/Weight",
+              admit_id: parseInt(id),
+            });
+            break;
+          case "neg1sd":
+            await Results.create({
+              result: "mild",
+              typeOfTest: "Wasting",
+              typeOfTestUsed: "Height/Weight",
+              admit_id: parseInt(id),
+            });
+            break;
+          case "sd0":
+            await Results.create({
+              result: "normal",
+              typeOfTest: "No Malnutrition",
+              typeOfTestUsed: "Height/Weight",
+              admit_id: parseInt(id),
+            });
+            break;
+          case "sd1":
+            await Results.create({
+              result: "mild",
+              typeOfTest: "Overweight",
+              typeOfTestUsed: "Height/Weight",
+              admit_id: parseInt(id),
+            });
+            break;
+          case "sd2":
+            await Results.create({
+              result: "moderate",
+              typeOfTest: "Obesity",
+              typeOfTestUsed: "Height/Weight",
+              admit_id: parseInt(id),
+            });
+            break;
+          case "sd3":
+            await Results.create({
+              result: "severe",
+              typeOfTest: "Obesity",
+              typeOfTestUsed: "Height/Weight",
+              admit_id: parseInt(id),
+            });
+            break;
+          default:
+            break;
+        }
       }
-    };
-
-    const processHeightAge = async () => {
-      if (!test.test_types[0].height_age || ageInMonths > 228) return;
-
+    }
+    if (Test.test_types[0].height_age && ageInMonths <= 228) {
       const closestRow = await HeightAge.findOne({
-        where: { age: ageInMonths, gender },
+        where: { age: ageInMonths, gender: Test.patient.gender },
       });
-      if (closestRow) {
-        const height = parseFloat(test.height);
-        if (isNaN(height))
-          return res.status(400).json({ error: "Invalid height value" });
+      if (Object.keys(closestRow).length > 0) {
+        const row = closestRow;
+        const height = parseFloat(Test.height);
 
-        await evaluateSD(
-          height,
-          closestRow,
-          height < closestRow.sdo
-            ? "Stunting"
-            : height < closestRow.sd1
-            ? "No Malnutrition"
-            : "Over Growth",
-          "Height/Age"
-        );
-      }
-    };
-
-    const processWeightAge = async () => {
-      if (!test.test_types[0].weight_age || ageInMonths > 228) return;
-
-      const closestRow = await WeightAge.findOne({
-        where: { age: ageInMonths, gender },
-      });
-      if (closestRow) {
-        const weight = parseFloat(test.weight);
-        if (isNaN(weight))
+        if (isNaN(height)) {
           return res.status(400).json({ error: "Invalid weight value" });
+        }
+        const sdCategories = {
+          neg3sd: Math.abs(height - row.neg3sd),
+          neg2sd: Math.abs(height - row.neg2sd),
+          neg1sd: Math.abs(height - row.neg1sd),
+          sd0: Math.abs(height - row.sd0),
+          sd1: Math.abs(height - row.sd1),
+          sd2: Math.abs(height - row.sd2),
+          sd3: Math.abs(height - row.sd3),
+        };
 
-        await evaluateSD(
-          weight,
-          closestRow,
-          weight < closestRow.sd0
-            ? "Underweight"
-            : weight < closestRow.sd1
-            ? "No Malnutrition"
-            : "Obesity",
-          "Weight/Age"
+        const closestSD = Object.keys(sdCategories).reduce((a, b) =>
+          sdCategories[a] < sdCategories[b] ? a : b
         );
+        switch (closestSD) {
+          case "neg3sd":
+            await Results.create({
+              result: "severe",
+              typeOfTest: "Stunting",
+              typeOfTestUsed: "Height/Age",
+              admit_id: parseInt(id),
+            });
+            break;
+          case "neg2sd":
+            await Results.create({
+              result: "moderate",
+              typeOfTest: "Stunting",
+              typeOfTestUsed: "Height/Age",
+              admit_id: parseInt(id),
+            });
+            break;
+          case "neg1sd":
+            await Results.create({
+              result: "mild",
+              typeOfTest: "Stunting",
+              typeOfTestUsed: "Height/Age",
+              admit_id: parseInt(id),
+            });
+            break;
+          case "sd0":
+            await Results.create({
+              result: "normal",
+              typeOfTest: "Growth",
+              typeOfTestUsed: "Height/Age",
+              admit_id: parseInt(id),
+            });
+            break;
+          case "sd1":
+            await Results.create({
+              result: "mild",
+              typeOfTest: "Growth",
+              typeOfTestUsed: "Height/Age",
+              admit_id: parseInt(id),
+            });
+            break;
+          case "sd2":
+            await Results.create({
+              result: "moderate",
+              typeOfTest: "Growth",
+              typeOfTestUsed: "Height/Age",
+              admit_id: parseInt(id),
+            });
+            break;
+          case "sd3":
+            await Results.create({
+              result: "severe",
+              typeOfTest: "Growth",
+              typeOfTestUsed: "Height/Age",
+              admit_id: parseInt(id),
+            });
+            break;
+          default:
+            break;
+        }
       }
-    };
+    }
+    if (Test.test_types[0].weight_age && ageInMonths <= 228) {
+      const closestRow = await WeightAge.findOne({
+        where: { age: ageInMonths, gender: Test.patient.gender },
+      });
+      if (Object.keys(closestRow).length > 0) {
+        const row = closestRow;
+        const weight = parseFloat(Test.weight);
 
-    const processBMI = async () => {
-      if (!test.test_types[0].BMI) return;
+        if (isNaN(weight)) {
+          return res.status(400).json({ error: "Invalid weight value" });
+        }
+        const sdCategories = {
+          neg3sd: Math.abs(weight - row.neg3sd),
+          neg2sd: Math.abs(weight - row.neg2sd),
+          neg1sd: Math.abs(weight - row.neg1sd),
+          sd0: Math.abs(weight - row.sd0),
+          sd1: Math.abs(weight - row.sd1),
+          sd2: Math.abs(weight - row.sd2),
+          sd3: Math.abs(weight - row.sd3),
+        };
 
-      const height = parseFloat(test.height);
-      const weight = parseFloat(test.weight);
-      if (isNaN(height) || isNaN(weight))
-        return res
-          .status(400)
-          .json({ error: "Invalid height or weight value" });
+        const closestSD = Object.keys(sdCategories).reduce((a, b) =>
+          sdCategories[a] < sdCategories[b] ? a : b
+        );
+        switch (closestSD) {
+          case "neg3sd":
+            await Results.create({
+              result: "severe",
+              typeOfTest: "Underweight",
+              typeOfTestUsed: "Weight/Age",
+              admit_id: parseInt(id),
+            });
+            break;
+          case "neg2sd":
+            await Results.create({
+              result: "moderate",
+              typeOfTest: "Underweight",
+              typeOfTestUsed: "Weight/Age",
+              admit_id: parseInt(id),
+            });
+            break;
+          case "neg1sd":
+            await Results.create({
+              result: "mild",
+              typeOfTest: "Underweight",
+              typeOfTestUsed: "Weight/Age",
+              admit_id: parseInt(id),
+            });
+            break;
+          case "sd0":
+            await Results.create({
+              result: "normal",
+              typeOfTest: "No Malnutrition",
+              typeOfTestUsed: "Weight/Age",
+              admit_id: parseInt(id),
+            });
+            break;
+          case "sd1":
+            await Results.create({
+              result: "mild",
+              typeOfTest: "Overweight",
+              typeOfTestUsed: "Weight/Age",
+              admit_id: parseInt(id),
+            });
+            break;
+          case "sd2":
+            await Results.create({
+              result: "moderate",
+              typeOfTest: "Obesity",
+              typeOfTestUsed: "Weight/Age",
+              admit_id: parseInt(id),
+            });
+            break;
+          case "sd3":
+            await Results.create({
+              result: "severe",
+              typeOfTest: "Obesity",
+              typeOfTestUsed: "Weight/Age",
+              admit_id: parseInt(id),
+            });
+            break;
+          default:
+            break;
+        }
+      }
+    }
+    if (Test.test_types[0].BMI) {
+      const height = parseFloat(Test.height);
+      const weight = parseFloat(Test.weight);
 
       const bmi = (10000 * weight) / (height * height);
+
       const closestRow = await BMIAge.findOne({
-        where: { age: ageInMonths, gender },
+        where: { age: ageInMonths, gender: Test.patient.gender },
       });
 
-      if (closestRow && ageInMonths <= 228) {
-        await evaluateSD(
-          bmi,
-          closestRow,
-          bmi < closestRow.sd0
-            ? "Wasting"
-            : bmi < closestRow.sd1
-            ? "No Malnutrition"
-            : "Obesity",
-          "BMI"
-        );
-      } else if (ageInMonths > 228) {
-        const bmiCategories = [
-          { limit: 16, result: "severe" },
-          { limit: 17, result: "moderate" },
-          { limit: 18.5, result: "mild" },
-          { limit: 25, result: "normal" },
-          { limit: 27, result: "mild" },
-          { limit: 29, result: "moderate" },
-          { result: "severe" },
-        ];
+      if (Object.keys(closestRow).length > 0 && ageInMonths <= 228) {
+        const row = closestRow;
+        const sdCategories = {
+          neg3sd: Math.abs(bmi - row.neg3sd),
+          neg2sd: Math.abs(bmi - row.neg2sd),
+          neg1sd: Math.abs(bmi - row.neg1sd),
+          sd0: Math.abs(bmi - row.sd0),
+          sd1: Math.abs(bmi - row.sd1),
+          sd2: Math.abs(bmi - row.sd2),
+          sd3: Math.abs(bmi - row.sd3),
+        };
 
-        for (const { limit, result } of bmiCategories) {
-          if (!limit || bmi < limit) {
+        const closestSD = Object.keys(sdCategories).reduce((a, b) =>
+          sdCategories[a] < sdCategories[b] ? a : b
+        );
+        switch (closestSD) {
+          case "neg3sd":
             await Results.create({
-              result,
-              typeOfTest: result.includes("Wasting") ? "Wasting" : "Obesity",
+              result: "severe",
+              typeOfTest: "Wasting",
               typeOfTestUsed: "BMI",
               admit_id: parseInt(id),
             });
             break;
-          }
+          case "neg2sd":
+            await Results.create({
+              result: "moderate",
+              typeOfTest: "Wasting",
+              typeOfTestUsed: "BMI",
+              admit_id: parseInt(id),
+            });
+            break;
+          case "neg1sd":
+            await Results.create({
+              result: "mild",
+              typeOfTest: "Wasting",
+              typeOfTestUsed: "BMI",
+              admit_id: parseInt(id),
+            });
+            break;
+          case "sd0":
+            await Results.create({
+              result: "normal",
+              typeOfTest: "No Malnutrition",
+              typeOfTestUsed: "BMI",
+              admit_id: parseInt(id),
+            });
+            break;
+          case "sd1":
+            await Results.create({
+              result: "mild",
+              typeOfTest: "Overweight",
+              typeOfTestUsed: "BMI",
+              admit_id: parseInt(id),
+            });
+            break;
+          case "sd2":
+            await Results.create({
+              result: "moderate",
+              typeOfTest: "Obesity",
+              typeOfTestUsed: "BMI",
+              admit_id: parseInt(id),
+            });
+            break;
+          case "sd3":
+            await Results.create({
+              result: "severe",
+              typeOfTest: "Obesity",
+              typeOfTestUsed: "BMI",
+              admit_id: parseInt(id),
+            });
+            break;
+          default:
+            break;
         }
       }
-    };
-
-    // const processMUAC = async () => {
-    //   if (!test.test_types[0].muac) return;
-
-    //   const muac = parseFloat(test.test_types[0].muacValue);
-    //   if (isNaN(muac))
-    //     return res.status(400).json({ error: "Invalid MUAC value" });
-
-    //   const muacCategories = [
-    //     { limit: 11.5, result: "severe" },
-    //     { limit: 12.5, result: "moderate" },
-    //     { limit: ageInMonths <= 60 ? Infinity : 18.5, result: "normal" },
-    //     { limit: 22.5, result: "moderate" },
-    //     { result: "severe" },
-    //   ];
-
-    //   for (const { limit, result } of muacCategories) {
-    //     if (muac < limit) {
-    //       await Results.create({
-    //         result,
-    //         typeOfTest: "Acute Malnutrition",
-    //         typeOfTestUsed: "MUAC",
-    //         admit_id: parseInt(id),
-    //       });
-    //       break;
-    //     }
-    //   }
-    // };
-
-    const processMUAC = async (test, ageInMonths, id, res) => {
-      if (!test.test_types[0].muac) return;
-
-      const muac = parseFloat(test.test_types[0].muacValue);
-      if (isNaN(muac)) {
-        return res.status(400).json({ error: "Invalid MUAC value" });
-      }
-
-      const muacCategories =
-        ageInMonths <= 60
-          ? [
-              { limit: 11.5, result: "severe" },
-              { limit: 12.5, result: "moderate" },
-              { limit: 26.5, result: "normal" },
-            ]
-          : [
-              { limit: 18.5, result: "severe" },
-              { limit: 22.5, result: "moderate" },
-              { limit: 40.5, result: "normal" },
-            ];
-
-      for (const { limit, result } of muacCategories) {
-        if (muac < limit) {
+      if (ageInMonths > 228) {
+        if (bmi < 16) {
           await Results.create({
-            result,
-            typeOfTest: result === "normal" ? "No Malnutrition" : "Wasting",
+            result: "severe",
+            typeOfTest: "Wasting",
+            typeOfTestUsed: "BMI",
+            admit_id: parseInt(id),
+          });
+        } else if (bmi >= 16 && bmi < 17) {
+          await Results.create({
+            result: "moderate",
+            typeOfTest: "Wasting",
+            typeOfTestUsed: "BMI",
+            admit_id: parseInt(id),
+          });
+        } else if (bmi >= 17 && bmi < 18.5) {
+          await Results.create({
+            result: "mild",
+            typeOfTest: "Wasting",
+            typeOfTestUsed: "BMI",
+            admit_id: parseInt(id),
+          });
+        } else if (bmi >= 18.5 && bmi < 25) {
+          await Results.create({
+            result: "normal",
+            typeOfTest: "No Malnutrition",
+            typeOfTestUsed: "BMI",
+            admit_id: parseInt(id),
+          });
+        } else if (bmi >= 25 && bmi < 27) {
+          await Results.create({
+            result: "mild",
+            typeOfTest: "Overweight",
+            typeOfTestUsed: "BMI",
+            admit_id: parseInt(id),
+          });
+        } else if (bmi >= 27 && bmi < 29) {
+          await Results.create({
+            result: "moderate",
+            typeOfTest: "Obesity",
+            typeOfTestUsed: "BMI",
+            admit_id: parseInt(id),
+          });
+        } else {
+          await Results.create({
+            result: "severe",
+            typeOfTest: "Obesity",
+            typeOfTestUsed: "BMI",
+            admit_id: parseInt(id),
+          });
+        }
+      }
+    }
+    if (Test.test_types[0].muac) {
+      const muac = Test.test_types[0].muacValue;
+      if (ageInMonths <= 60) {
+        if (muac < 11.5) {
+          await Results.create({
+            result: "severe",
+            typeOfTest: "Acute Malnutrition",
             typeOfTestUsed: "MUAC",
             admit_id: parseInt(id),
           });
-          break;
+        } else if (muac >= 11.5 && muac < 12.5) {
+          await Results.create({
+            result: "moderate",
+            typeOfTest: "Acute Malnutrition",
+            typeOfTestUsed: "MUAC",
+            admit_id: parseInt(id),
+          });
+        } else {
+          await Results.create({
+            result: "normal",
+            typeOfTest: "No Malnutrition",
+            typeOfTestUsed: "MUAC",
+            admit_id: parseInt(id),
+          });
         }
       }
-    };
-
-
-    await Promise.all([
-      processHeightWeight(),
-      processHeightAge(),
-      processWeightAge(),
-      processBMI(),
-      processMUAC(),
-    ]);
-
+      if (ageInMonths > 60) {
+        if (muac < 18.5) {
+          await Results.create({
+            result: "severe",
+            typeOfTest: "Acute Malnutrition",
+            typeOfTestUsed: "MUAC",
+            admit_id: parseInt(id),
+          });
+        } else if (muac >= 18.5 && muac < 22.5) {
+          await Results.create({
+            result: "moderate",
+            typeOfTest: "Acute Malnutrition",
+            typeOfTestUsed: "MUAC",
+            admit_id: parseInt(id),
+          });
+        } else {
+          await Results.create({
+            result: "normal",
+            typeOfTest: "No Malnutrition",
+            typeOfTestUsed: "MUAC",
+            admit_id: parseInt(id),
+          });
+        }
+      }
+    }
     res.status(200).json("Results created successfully");
   } catch (error) {
-    console.error(error);
+    console.log(error);
     res.status(500).json("Server Error");
   }
 };
@@ -313,7 +543,7 @@ exports.createTreatment = async (req, res) => {
         severityLevels.includes(item.result) &&
         malnutritionTests.includes(item.typeOfTest)
     );
-
+    console.log(malnutrition);
     const overnutrition = results.results.filter(
       (item) =>
         severityLevels.includes(item.result) &&
@@ -322,29 +552,35 @@ exports.createTreatment = async (req, res) => {
     if (malnutrition.length > 0) {
       const patientCategory = results.patient_type;
 
-      const containsSevere = malnutrition.some((obj) => {
-        ["severe"].includes(obj.result);
-      });
-      const containsModerateMild = malnutrition.some((obj) => {
-        ["moderate", "mild"].includes(obj.result);
-      });
+      const containsSevere = malnutrition.some(
+        (item) => item.result === "severe"
+      );
+
+      const containsModerateMild = malnutrition.some((item) =>
+        ["moderate", "mild"].includes(item.result)
+      );
 
       if (containsSevere) {
         const treatment = await Treatment.findOne({
-          where: { patient_type: patientCategory, resultCategory: "severe" },
+          where: { patientCategory: patientCategory, resultCategory: "severe" },
         });
         await GivenTreatment.create({
           treatment: treatment.treatment,
           admit_id: id,
+          typeOfMalnutrition: "Malnutrition",
         });
       }
       if (containsModerateMild) {
         const treatment = await Treatment.findOne({
-          where: { patient_type: patientCategory, resultCategory: "moderate" },
+          where: {
+            patientCategory: patientCategory,
+            resultCategory: "moderate",
+          },
         });
         await GivenTreatment.create({
           treatment: treatment.treatment,
           admit_id: id,
+          typeOfMalnutrition: "Malnutrition",
         });
       }
     }
@@ -353,6 +589,7 @@ exports.createTreatment = async (req, res) => {
         treatment:
           "Weight loss councelling, Diet, Physical Activity and Exercises, Phentermine/ Topiramate, Or listat, Bupropion/ Naltrexone, Bariatric surgery",
         admit_id: id,
+        typeOfMalnutrition: "Overnutrition",
       });
     }
     res.status(200).json("Treatment generated successfully");

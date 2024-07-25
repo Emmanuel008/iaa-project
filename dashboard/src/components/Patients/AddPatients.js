@@ -34,20 +34,21 @@ const AddPatients = () => {
         birth_date,
         pregnancy,
       } = values;
-      await axios
-        .post(`${url}/patient`, {
-          first_name,
-          last_name,
-          gender,
-          residence,
-          birth_date,
-          pregnancy,
-          hospital_id: data.hospital_id,
-        })
-        .then((res) => {
-          console.log(res.data);
-          navigate("/main/patient");
-        });
+
+      const payload = {
+        first_name,
+        last_name,
+        gender,
+        residence,
+        birth_date,
+        pregnancy: gender === "male" ? false : pregnancy,
+        hospital_id: data.hospital_id,
+      };
+
+      await axios.post(`${url}/patient`, payload).then((res) => {
+        console.log(res.data);
+        navigate("/main/patient");
+      });
     } catch (error) {
       console.log(error);
     }
@@ -151,7 +152,7 @@ const AddPatients = () => {
                           required
                         >
                           <option disabled value="">
-                            Select User Role
+                            Select Gender
                           </option>
                           <option value="male">Male</option>
                           <option value="female">Female</option>
@@ -177,52 +178,54 @@ const AddPatients = () => {
                         />
                       </div>
                     </div>
-                    <div className="w-full lg:w-6/12 px-4">
-                      <div className="relative w-full mb-3">
-                        <label
-                          className="block uppercase text-blueGray-600 text-xs font-bold mb-2"
-                          htmlFor="can-be-pregnant"
-                        >
-                          Can Be Pregnant
-                        </label>
-                        <div>
-                          <div className="flex items-center mb-4">
-                            <input
-                              id="pregnant-yes"
-                              type="radio"
-                              name="pregnancy"
-                              value="true"
-                              checked={values.pregnancy === true}
-                              onChange={handleRadioChange}
-                              className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500"
-                            />
-                            <label
-                              htmlFor="pregnant-yes"
-                              className="ml-2 text-sm font-medium text-gray-900"
-                            >
-                              Yes
-                            </label>
-                          </div>
-                          <div className="flex items-center">
-                            <input
-                              id="pregnant-no"
-                              type="radio"
-                              name="pregnancy"
-                              value="false"
-                              checked={values.pregnancy === false}
-                              onChange={handleRadioChange}
-                              className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500"
-                            />
-                            <label
-                              htmlFor="pregnant-no"
-                              className="ml-2 text-sm font-medium text-gray-900"
-                            >
-                              No
-                            </label>
+                    {values.gender === "female" && (
+                      <div className="w-full lg:w-6/12 px-4">
+                        <div className="relative w-full mb-3">
+                          <label
+                            className="block uppercase text-blueGray-600 text-xs font-bold mb-2"
+                            htmlFor="can-be-pregnant"
+                          >
+                            Can Be Pregnant
+                          </label>
+                          <div>
+                            <div className="flex items-center mb-4">
+                              <input
+                                id="pregnant-yes"
+                                type="radio"
+                                name="pregnancy"
+                                value="true"
+                                checked={values.pregnancy === true}
+                                onChange={handleRadioChange}
+                                className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500"
+                              />
+                              <label
+                                htmlFor="pregnant-yes"
+                                className="ml-2 text-sm font-medium text-gray-900"
+                              >
+                                Yes
+                              </label>
+                            </div>
+                            <div className="flex items-center">
+                              <input
+                                id="pregnant-no"
+                                type="radio"
+                                name="pregnancy"
+                                value="false"
+                                checked={values.pregnancy === false}
+                                onChange={handleRadioChange}
+                                className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500"
+                              />
+                              <label
+                                htmlFor="pregnant-no"
+                                className="ml-2 text-sm font-medium text-gray-900"
+                              >
+                                No
+                              </label>
+                            </div>
                           </div>
                         </div>
                       </div>
-                    </div>
+                    )}
                   </div>
                 </form>
               </div>
