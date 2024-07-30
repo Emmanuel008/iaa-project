@@ -201,7 +201,7 @@ const Sidebar = ({ isSidebarOpen, toggleSidebar }) => {
                       Admited Patients
                     </Link>
                   </li>
-                  <li className="mb-4">
+                  {/* <li className="mb-4">
                     <Link
                       to="/main/treatedpatient"
                       className={`py-2 px-2 rounded-md text-gray-300 text-sm flex items-center hover:bg-gray-950 hover:text-gray-100 ${
@@ -213,7 +213,7 @@ const Sidebar = ({ isSidebarOpen, toggleSidebar }) => {
                     >
                       Treated Patients
                     </Link>
-                  </li>
+                  </li> */}
                 </ul>
               </li>
             )}
