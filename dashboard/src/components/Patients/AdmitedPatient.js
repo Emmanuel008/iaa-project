@@ -20,7 +20,9 @@ const AdmitedPatient = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const res = await axios.get(`${url}/admiting/${data.hospital_id}`);
+        const res = await axios.get(
+          `${url}/admiting/admited/${data.hospital_id}`
+        );
         setRows(res.data);
       } catch (error) {
         console.log(error);
@@ -111,7 +113,7 @@ const AdmitedPatient = () => {
                   <td className="p-3 px-5">
                     {new Date(row.createdAt).toLocaleString()}
                   </td>
-                  <td className="p-3 px-5">{row.patient_status}</td>
+                  <td className="p-3 px-5">{row.admiting_status}</td>
                   <td className="p-3 px-5">{row.patient_type}</td>
                   <td className="p-3 px-5 flex">
                     <button
@@ -119,7 +121,7 @@ const AdmitedPatient = () => {
                       onClick={() => handleAdmit(row)}
                       className="mr-2 text-sm bg-blue-500 hover:bg-blue-700 text-white py-1 px-2 rounded focus:outline-none focus:shadow-outline"
                     >
-                      Test & Treatment
+                      Test
                     </button>
                     <button
                       type="button"

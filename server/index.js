@@ -21,7 +21,7 @@ const hospitalRouter = require("./routers/hospitalRoutes")
 const hospitalInfoRouter = require("./routers/hospitalInfoRoutes");
 const patientRouter = require("./routers/patientRoutes")
 const admitingRouter = require("./routers/admitingRoutes")
-const testResultTreatmentRouter = require("./routers/testResultTreatmentRoutes")
+const testTypeRouter = require("./routers/testTypeRoutes")
 const statsRouter = require("./routers/statsRoutes")
 
 app.use("/user", userRouter);
@@ -29,7 +29,7 @@ app.use("/hospital", hospitalRouter);
 app.use("/hospitalinfo", hospitalInfoRouter);
 app.use("/patient", patientRouter);
 app.use("/admiting", admitingRouter);
-app.use("/testresulttreatment",testResultTreatmentRouter)
+app.use("/test",testTypeRouter)
 app.use("/stats", statsRouter)
 
 

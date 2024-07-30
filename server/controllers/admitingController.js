@@ -5,7 +5,7 @@ const Patient = db.patients
 
 exports.create = async (req, res) => {
     try {
-        const { patient_type, height, weight, patient_card_no, date } = req.body;
+        const { patient_type, height, weight, patient_card_no, date,  } = req.body;
 
         await AdmitingInfo.create({
           patient_type,
@@ -13,7 +13,7 @@ exports.create = async (req, res) => {
           height,
           date,
           patient_card_no,
-          patient_status: "admited",
+          admiting_status: "admited"
         });
 
         res.status(200).json("Patient Admited Successfully")
@@ -24,24 +24,47 @@ exports.create = async (req, res) => {
     }
 }
 
-exports.getAll = async (req,res) =>{
+exports.getAllAdmited = async (req,res) =>{
     try {
         const id = req.params.id
         const admitingInfo = await AdmitingInfo.findAll({
-            where: {patient_status: "admited"},
-            include:[{
-                model: Patient,
-                required: true,
-                where: {
-                    hospital_id: id
-                }
-            }]
-        })
+          where: { admiting_status: "admited" },
+          include: [
+            {
+              model: Patient,
+              required: true,
+              where: {
+                hospital_id: id,
+              },
+            },
+          ],
+        });
         res.status(200).json(admitingInfo)
     } catch (error) {
         res.status(500).json("Server Error");
     }
 }
+
+exports.getReleased = async (req, res) => {
+  try {
+    const id = req.params.id;
+    const admitingInfo = await AdmitingInfo.findAll({
+      where: { admiting_status: "released" },
+      include: [
+        {
+          model: Patient,
+          required: true,
+          where: {
+            hospital_id: id,
+          },
+        },
+      ],
+    });
+    res.status(200).json(admitingInfo);
+  } catch (error) {
+    res.status(500).json("Server Error");
+  }
+};
 
 exports.updateInfo = async (req,res) =>{
     try {

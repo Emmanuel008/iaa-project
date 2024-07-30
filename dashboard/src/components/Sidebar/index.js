@@ -201,35 +201,17 @@ const Sidebar = ({ isSidebarOpen, toggleSidebar }) => {
                       Admited Patients
                     </Link>
                   </li>
-                  {data.user_type ===
-                    "admin" && (
-                      <li className="mb-4">
-                        <Link
-                          to="/main/pending"
-                          className={`py-2 px-2 rounded-md text-gray-300 text-sm flex items-center hover:bg-gray-950 hover:text-gray-100 ${
-                            activeItem === "pending-approval"
-                              ? "bg-gray-950 text-gray-100"
-                              : ""
-                          }`}
-                          onClick={(e) =>
-                            handleItemClick(e, "pending-approval")
-                          }
-                        >
-                          Pending Approval
-                        </Link>
-                      </li>
-                    )}
                   <li className="mb-4">
                     <Link
-                      to="/main/rejectedapproval"
+                      to="/main/treatedpatient"
                       className={`py-2 px-2 rounded-md text-gray-300 text-sm flex items-center hover:bg-gray-950 hover:text-gray-100 ${
-                        activeItem === "manage-approval"
+                        activeItem === "treated-patients"
                           ? "bg-gray-950 text-gray-100"
                           : ""
                       }`}
-                      onClick={(e) => handleItemClick(e, "manage-approval")}
+                      onClick={(e) => handleItemClick(e, "treated-patients")}
                     >
-                      Rejected Approval
+                      Treated Patients
                     </Link>
                   </li>
                 </ul>

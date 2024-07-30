@@ -2,7 +2,6 @@
 /* eslint-disable jsx-a11y/anchor-is-valid */
 import React, {useEffect, useState} from "react";
 import { FiMenu } from "react-icons/fi";
-import { IoIosNotifications } from "react-icons/io";
 import { createPopper } from "@popperjs/core";
 import { Link } from "react-router-dom";
 import axios from "axios";
@@ -157,71 +156,6 @@ const Navbar = ({ toggleSidebar }) => {
           </li>
         </ul>
         <ul className="ml-auto flex items-center">
-          {(data.user_type === "admin" || data.user_type === "user") && (
-            <li className="dropdown">
-              <button
-                type="button"
-                className="dropdown-toggle text-gray-400 w-8 h-8 rounded flex items-center justify-center hover:bg-gray-50 hover:text-gray-600"
-              >
-                <IoIosNotifications />
-              </button>
-              <div className="dropdown-menu shadow-md shadow-black/5 z-30 hidden max-w-xs w-full bg-white rounded-md border border-gray-100">
-                <div className="flex items-center px-4 pt-4 border-b border-b-gray-100 notification-tab">
-                  <button
-                    type="button"
-                    data-tab="notification"
-                    data-tab-page="notifications"
-                    className="text-gray-400 font-medium text-[13px] hover:text-gray-600 border-b-2 border-b-transparent mr-4 pb-1 active"
-                  >
-                    Notifications
-                  </button>
-                </div>
-                <div className="my-2">
-                  <ul
-                    className="max-h-64 overflow-y-auto"
-                    data-tab-for="notification"
-                    data-page="notifications"
-                  >
-                    {data.user_type === "admin" && (
-                      <li>
-                        <a
-                          href="/main/pending"
-                          className="py-2 px-4 flex items-center hover:bg-gray-50 group"
-                        >
-                          <div className="ml-2">
-                            <div className="text-[13px] text-gray-600 font-medium truncate group-hover:text-blue-500">
-                              {stats.pendingTestsCount} pending Approval
-                            </div>
-                            <div className="text-[11px] text-gray-400">
-                              from a Health Officer
-                            </div>
-                          </div>
-                        </a>
-                      </li>
-                    )}
-                    {(data.user_type === "user" ||
-                      data.user_type === "admin") && (
-                      <li>
-                        <a
-                          href="/main/rejectedapproval"
-                          className="py-2 px-4 flex items-center hover:bg-gray-50 group"
-                        >
-                          <div className="ml-2">
-                            <div className="text-[13px] text-gray-600 font-medium truncate group-hover:text-blue-500">
-                              {stats.rejectedTestsCount} Rejected Approval
-                            </div>
-                            <div className="text-[11px] text-gray-400">
-                              from a In-charge Officer
-                            </div>
-                          </div>
-                        </a>
-                      </li>
-                    )}
-                  </ul>
-                </div>
-              </div>
-            </li>
-          )}
           <li className="dropdown ml-3">
             <button type="button" className="dropdown-toggle flex items-center">
               <img

@@ -5,6 +5,7 @@ const User = db.users;
 const TestResultTreatment = db.test_result_treatments;
 const Patient = db.patients;
 const AdmitingInfo = db.admiting_infos;
+const Results = db.results
 
 // Controller to return number of hospitals and number of users who have user_type = "admin"
 exports.getHospitalsAndAdminUsersCount = async (req, res) => {
@@ -31,23 +32,9 @@ exports.getUsersAndPendingTestsCountByHospitalId = async (req, res) => {
   const id = req.params.id;
 
   try {
-    const adminUsersCount = await User.count({
+    const pendingTestsCount = await AdmitingInfo.count({
       where: {
-        user_type: "admin",
-        hospital_id: id,
-      },
-    });
-
-    const userUsersCount = await User.count({
-      where: {
-        user_type: "user",
-        hospital_id: id,
-      },
-    });
-
-    const pendingTestsCount = await TestResultTreatment.count({
-      where: {
-        status: "pending",
+        admiting_status: "admited",
       },
       include: [
         {
@@ -56,9 +43,9 @@ exports.getUsersAndPendingTestsCountByHospitalId = async (req, res) => {
         },
       ],
     });
-    const rejectedTestsCount = await TestResultTreatment.count({
+    const rejectedTestsCount = await AdmitingInfo.count({
       where: {
-        status: "rejected",
+        admiting_status: "released",
       },
       include: [
         {
@@ -69,8 +56,6 @@ exports.getUsersAndPendingTestsCountByHospitalId = async (req, res) => {
     });
 
     res.status(200).json({
-      adminUsersCount,
-      userUsersCount,
       pendingTestsCount,
       rejectedTestsCount,
     });
@@ -135,91 +120,96 @@ exports.getRejectedTestsCountByHospitalId = async (req, res) => {
 const { Op } = require("sequelize");
 
 exports.getMalnutritionStats = async (req, res) => {
-  const malnutritionType = req.params.malnutritionType;
-  const id = req.params.id;
-
   try {
-    // Define patient types
-    const patientTypes = {
-      childrenUnder5Years: "Children under 5 years",
-      elderly: "Elderly",
-      otherPatient: "other patient",
-    };
+    const malnutritionType = req.params.malnutritionType;
+    const hospitalId = req.params.id;
 
-    // Initialize results object
-    const results = {
-      male: {},
-      female: {},
-      pregnantWomen: 0,
-    };
+    // Define age ranges
+    const ageRanges = [
+      { label: "under5years", minAge: 0, maxAge: 5 },
+      { label: "between5and19years", minAge: 5, maxAge: 19 },
+      { label: "above19years", minAge: 19, maxAge: 100 },
+    ];
 
-    // Regex pattern to match the malnutrition type as a whole word
-    const malnutritionSearchPattern = `%${malnutritionType}%`;
+   
 
-    for (const key in patientTypes) {
-      const patientType = patientTypes[key];
+    // Calculate dates for age ranges
+    const ageRangeDates = ageRanges.map((range) => {
+      const currentDate = new Date(); // Reset currentDate for each range
+      return {
+        ...range,
+        minDate: new Date(
+          currentDate.getFullYear() - range.maxAge,
+          currentDate.getMonth(),
+          currentDate.getDate()
+        ),
+        maxDate: new Date(
+          currentDate.getFullYear() - range.minAge,
+          currentDate.getMonth(),
+          currentDate.getDate()
+        ),
+      };
+    });
 
-      // Male counts with specific malnutrition type and patient type
-      results.male[key] = await Patient.count({
-        where: { gender: "male", hospital_id: id },
-        include: [
-          {
-            model: AdmitingInfo,
-            where: { patient_type: patientType },
-            required: true,
-          },
-          {
-            model: TestResultTreatment,
-            where: {
-              status: "approved",
-              result: { [Op.like]: malnutritionSearchPattern },
-            },
-            required: true,
-          },
-        ],
-      });
-
-      // Female counts with specific malnutrition type and patient type
-      results.female[key] = await Patient.count({
-        where: { gender: "female", hospital_id: id },
-        include: [
-          {
-            model: AdmitingInfo,
-            where: { patient_type: patientType },
-            required: true,
-          },
-          {
-            model: TestResultTreatment,
-            where: {
-              status: "approved",
-              result: { [Op.like]: malnutritionSearchPattern },
-            },
-            required: true,
-          },
-        ],
-      });
-    }
-
-    // Pregnant women count with specific malnutrition type
-    results.pregnantWomen = await Patient.count({
-      where: { gender: "female", hospital_id: id },
+    const whereClause = hospitalId ? { hospital_id: hospitalId } : {};
+    const results = await Patient.findAll({
+      where: whereClause,
       include: [
         {
           model: AdmitingInfo,
-          where: { patient_type: "Pregnancy women" },
           required: true,
-        },
-        {
-          model: TestResultTreatment,
-          where: { result: { [Op.like]: malnutritionSearchPattern } },
-          required: true,
+          include: [
+            {
+              model: Results,
+              required: true,
+              where: {
+                typeOfTest: {
+                  [Op.like]: malnutritionType,
+                },
+              },
+            },
+          ],
         },
       ],
     });
 
-    res.status(200).json(results);
+    const stats = {
+      male: {
+        "under5years": 0,
+        "between5and19years": 0,
+        "above19years": 0,
+      },
+      female: {
+        "under5years": 0,
+        "between5and19years": 0,
+        "above19years": 0,
+      },
+      pregnant: 0,
+    };
+
+    results.forEach((patient) => {
+      const birthDate = new Date(patient.birth_date);
+      const gender = patient.gender;
+      const isPregnant = patient.pregnancy;
+
+      ageRangeDates.forEach((range) => {
+        if (birthDate >= range.minDate && birthDate <= range.maxDate) {
+          if (gender === "male") {
+            stats.male[range.label]++;
+          } else if (gender === "female") {
+            stats.female[range.label]++;
+          }
+        }
+      });
+
+      if (isPregnant) {
+        stats.pregnant++;
+      }
+    });
+
+    res.status(200).json(stats);
   } catch (error) {
-    console.error("Error fetching data:", error);
+    console.log(error);
     res.status(500).json({ message: "Internal server error" });
   }
 };
