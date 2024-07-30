@@ -1,12 +1,15 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import axios from "axios";
 import { url } from "../../Utills/API";
+import ReactToPrint from "react-to-print";
+
 
 const ViewPatient = () => {
+  const componentRef = useRef();
   const data = JSON.parse(localStorage.getItem("tested"));
-  // console.log(data)
   const [test, setTest] = useState([]);
   const [result, setResult] = useState([]);
+
   useEffect(() => {
     const fetch = async () => {
       try {
@@ -19,28 +22,40 @@ const ViewPatient = () => {
     fetch();
   }, [data.admit_id]);
 
-  useEffect(()=>{
+  useEffect(() => {
     const fetch = async () => {
       try {
-        const res = await axios.get(`${url}/test/resulttreatment/${data.admit_id}`);
+        const res = await axios.get(
+          `${url}/test/resulttreatment/${data.admit_id}`
+        );
         setResult(res.data);
       } catch (error) {
         console.log(error);
       }
     };
     fetch();
-  },[data.admit_id])
+  }, [data.admit_id]);
+
+
   return (
     <>
-      <section className=" py-1 bg-blueGray-50">
-        <div className="w-full  px-4 mx-auto mt-6">
+      <section className="py-1 bg-blueGray-50">
+        <div className="flex justify-end mt-2 mr-5">
+          <ReactToPrint
+            trigger={() => (
+              <button className="bg-blue-500 text-white px-2 py-1 rounded hover:bg-blue-700">
+                Print
+              </button>
+            )}
+            content={() => componentRef.current}
+          />
+        </div>
+        <div ref={componentRef} className="w-full px-4 mx-auto mt-6">
           <div className="relative flex flex-col min-w-0 break-words w-full mb-6 shadow-lg rounded-lg bg-blueGray-100 border-0">
-            <div className="rounded-t bg-white mb-0 px-6 py-6">
-              <div className="text-center flex justify-between">
-                <h6 className="text-blueGray-700 text-xl font-bold">
-                  Tested Patient
-                </h6>
-              </div>
+            <div className="rounded-t bg-white mb-0 px-6 py-6 flex justify-between">
+              <h6 className="text-blueGray-700 text-xl font-bold">
+                Tested Patient
+              </h6>
             </div>
             <div className="flex-auto px-4 lg:px-10 py-10 pt-0">
               <div>
@@ -50,10 +65,7 @@ const ViewPatient = () => {
                 <div className="flex flex-wrap">
                   <div className="w-full lg:w-6/12 px-4">
                     <div className="relative w-full mb-3">
-                      <label
-                        className="block uppercase text-blueGray-600 text-xs font-bold mb-2"
-                        htmlfor="grid-password"
-                      >
+                      <label className="block uppercase text-blueGray-600 text-xs font-bold mb-2">
                         Username
                       </label>
                       <input
@@ -66,10 +78,7 @@ const ViewPatient = () => {
                   </div>
                   <div className="w-full lg:w-6/12 px-4">
                     <div className="relative w-full mb-3">
-                      <label
-                        className="block uppercase text-blueGray-600 text-xs font-bold mb-2"
-                        htmlfor="grid-password"
-                      >
+                      <label className="block uppercase text-blueGray-600 text-xs font-bold mb-2">
                         Card Number
                       </label>
                       <input
@@ -82,10 +91,7 @@ const ViewPatient = () => {
                   </div>
                   <div className="w-full lg:w-6/12 px-4">
                     <div className="relative w-full mb-3">
-                      <label
-                        className="block uppercase text-blueGray-600 text-xs font-bold mb-2"
-                        htmlfor="grid-password"
-                      >
+                      <label className="block uppercase text-blueGray-600 text-xs font-bold mb-2">
                         Birth date
                       </label>
                       <input
@@ -98,10 +104,7 @@ const ViewPatient = () => {
                   </div>
                   <div className="w-full lg:w-6/12 px-4">
                     <div className="relative w-full mb-3">
-                      <label
-                        className="block uppercase text-blueGray-600 text-xs font-bold mb-2"
-                        htmlfor="grid-password"
-                      >
+                      <label className="block uppercase text-blueGray-600 text-xs font-bold mb-2">
                         Residence
                       </label>
                       <input
@@ -114,10 +117,7 @@ const ViewPatient = () => {
                   </div>
                   <div className="w-full lg:w-6/12 px-4">
                     <div className="relative w-full mb-3">
-                      <label
-                        className="block uppercase text-blueGray-600 text-xs font-bold mb-2"
-                        htmlfor="grid-password"
-                      >
+                      <label className="block uppercase text-blueGray-600 text-xs font-bold mb-2">
                         Gender
                       </label>
                       <input
@@ -136,10 +136,7 @@ const ViewPatient = () => {
                 <div className="flex flex-wrap">
                   <div className="w-full lg:w-6/12 px-4">
                     <div className="relative w-full mb-3">
-                      <label
-                        className="block uppercase text-blueGray-600 text-xs font-bold mb-2"
-                        htmlfor="grid-password"
-                      >
+                      <label className="block uppercase text-blueGray-600 text-xs font-bold mb-2">
                         Admiting date
                       </label>
                       <input
@@ -152,10 +149,7 @@ const ViewPatient = () => {
                   </div>
                   <div className="w-full lg:w-6/12 px-4">
                     <div className="relative w-full mb-3">
-                      <label
-                        className="block uppercase text-blueGray-600 text-xs font-bold mb-2"
-                        htmlfor="grid-password"
-                      >
+                      <label className="block uppercase text-blueGray-600 text-xs font-bold mb-2">
                         Patient Type
                       </label>
                       <input
@@ -167,10 +161,7 @@ const ViewPatient = () => {
                   </div>
                   <div className="w-full lg:w-6/12 px-4">
                     <div className="relative w-full mb-3">
-                      <label
-                        className="block uppercase text-blueGray-600 text-xs font-bold mb-2"
-                        htmlfor="grid-password"
-                      >
+                      <label className="block uppercase text-blueGray-600 text-xs font-bold mb-2">
                         Height in cm
                       </label>
                       <input
@@ -183,10 +174,7 @@ const ViewPatient = () => {
                   </div>
                   <div className="w-full lg:w-6/12 px-4">
                     <div className="relative w-full mb-3">
-                      <label
-                        className="block uppercase text-blueGray-600 text-xs font-bold mb-2"
-                        htmlfor="grid-password"
-                      >
+                      <label className="block uppercase text-blueGray-600 text-xs font-bold mb-2">
                         Weight in Kg
                       </label>
                       <input
@@ -217,7 +205,10 @@ const ViewPatient = () => {
                     <tbody>
                       {test &&
                         test.map((item, index) => (
-                          <tr className="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
+                          <tr
+                            key={index}
+                            className="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600"
+                          >
                             <th
                               scope="row"
                               className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white"
@@ -245,6 +236,7 @@ const ViewPatient = () => {
                       <textarea
                         className="block p-2.5 w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
                         value={item.treatment}
+                        disabled
                       />
                     </div>
                   ))}
