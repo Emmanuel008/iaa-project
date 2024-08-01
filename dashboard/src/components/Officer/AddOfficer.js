@@ -1,11 +1,14 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { url } from "../../Utills/API";
+import { useNavigate } from "react-router-dom";
 
 const AddOfficer = () => {
+  const navigate = useNavigate()
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
+  const [checkNumber, setCheckNumber] = useState(null);
   const [userRole, setUserRole] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
   const [healthCareCenter, setHealthCareCenter] = useState("");
@@ -51,13 +54,16 @@ const AddOfficer = () => {
       last_name: lastName,
       email,
       user_type: userRole,
+      checkNumber,
       phone: phoneNumber,
       hospital_id: healthCareCenter, // Assigning hospital_id from healthCareCenter for demonstration
     };
 
     try {
-      const response = await axios.post(`${url}/user`, newOfficer);
-      console.log("Officer added successfully:", response.data);
+      await axios.post(`${url}/user`, newOfficer)
+      .then(()=>{
+          navigate("/main/officer");
+      })
       // Optionally, you can redirect or show a success message here
     } catch (error) {
       console.error("Error adding officer:", error);
@@ -66,6 +72,7 @@ const AddOfficer = () => {
 
     // Clear form fields after submission
     setFirstName("");
+    setCheckNumber(null);
     setLastName("");
     setEmail("");
     setUserRole("");
@@ -184,6 +191,27 @@ const AddOfficer = () => {
                     <div className="relative w-full mb-3">
                       <label
                         className="block uppercase text-blueGray-600 text-xs font-bold mb-2"
+                        htmlFor="check-number"
+                      >
+                        Check Number
+                      </label>
+                      <div className="relative">
+                        <input
+                          type="Number"
+                          id="check-number"
+                          aria-describedby="helper-text-explanation"
+                          className="border-0 px-3 py-3 placeholder-blueGray-300 text-blueGray-600 bg-white rounded text-sm shadow focus:outline-none focus:ring w-full ease-linear transition-all duration-150"
+                          required
+                          value={checkNumber}
+                          onChange={(e)=> setCheckNumber(e.target.value)}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                  <div className="w-full lg:w-6/12 px-4">
+                    <div className="relative w-full mb-3">
+                      <label
+                        className="block uppercase text-blueGray-600 text-xs font-bold mb-2"
                         htmlFor="phone-number"
                       >
                         Phone Number
@@ -220,7 +248,7 @@ const AddOfficer = () => {
                         className="block uppercase text-blueGray-600 text-xs font-bold mb-2"
                         htmlFor="health-care-center"
                       >
-                        Health  Center
+                        Health Center
                       </label>
                       <select
                         id="health-care-center"
@@ -233,7 +261,10 @@ const AddOfficer = () => {
                           Select Health Center
                         </option>
                         {hospitalOptions.map((hospital) => (
-                          <option key={hospital.id} value={hospital.hospital_id}>
+                          <option
+                            key={hospital.id}
+                            value={hospital.hospital_id}
+                          >
                             {hospital.hospital_name}
                           </option>
                         ))}

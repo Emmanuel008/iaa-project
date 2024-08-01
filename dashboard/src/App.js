@@ -67,10 +67,10 @@ function App() {
                     path="/main/test_treatment"
                     element={<TestAndTreatement />}
                   />
-                  {/* <Route
+                  <Route
                     path="/main/treatedpatient"
                     element={<TreatedPatients />}
-                  /> */}
+                  />
                   <Route path="/main/tested" element={<ViewPatient />} />
                 </>
               )}
