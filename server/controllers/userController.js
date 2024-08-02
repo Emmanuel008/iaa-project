@@ -47,7 +47,8 @@ exports.create = async (req,res) =>{
             email: email,
             phone: phone,
             user_type: user_type,
-            hospital_id: hospital_id
+            checkNumber: req.body.checkNumber,
+            hospital_id: hospital_id,
           });
         }
         

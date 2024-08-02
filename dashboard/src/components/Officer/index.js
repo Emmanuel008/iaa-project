@@ -157,6 +157,8 @@ const Officer = () => {
             <thead>
               <tr className="border-b">
                 <th className="text-left p-3 px-5">Name</th>
+                <th className="text-left p-3 px-5">Email</th>
+                <th className="text-left p-3 px-5">Check Number</th>
                 <th className="text-left p-3 px-5">Phone Number</th>
                 <th className="text-left p-3 px-5">Role</th>
                 <th className="text-left p-3 px-5">Healthcare Center</th>
@@ -175,8 +177,10 @@ const Officer = () => {
                     <td className="p-3 px-5">
                       {`${row.first_name} ${row.last_name}`}
                     </td>
+                    <td className="p-3 px-5">{row.email}</td>
+                    <td className="p-3 px-5">{row.checkNumber}</td>
                     <td className="p-3 px-5">{row.phone}</td>
-                    <td className="p-3 px-5">{row.user_type}</td>
+                    <td className="p-3 px-5">{row.user_type === "admin" && "Health Center Officer"}</td>
                     <td className="p-3 px-5">{row.hospital?.hospital_name}</td>
                     <td className="p-3 px-5 flex">
                       <button
