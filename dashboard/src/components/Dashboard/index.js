@@ -130,7 +130,7 @@ const Dashboard = () => {
               <i className="iconoir-user text-3xl text-green-500" />
               <div className="ml-4">
                 <p className="text-gray-600 uppercase">
-                  Total HEALTH FACILITY IN-CHARGE
+                  Total HEALTH Center Officer
                 </p>
                 <p className="text-2xl font-bold">{stats.adminUsersCount}</p>
               </div>
@@ -208,7 +208,7 @@ const Dashboard = () => {
                         <td className="p-3 px-5">{row.hospital_district}</td>
                         <td className="p-3 px-5">{row.hospital_region}</td>
 
-                        <td className="p-3 px-5 flex justify-end">
+                        <td className="p-3 px-5 flex">
                           <button
                             type="button"
                             className="mr-2 text-sm bg-green-500 hover:bg-green-700 text-white py-1 px-2 rounded focus:outline-none focus:shadow-outline"

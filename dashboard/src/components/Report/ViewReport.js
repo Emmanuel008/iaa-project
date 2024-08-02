@@ -147,7 +147,7 @@ const ViewReport = () => {
           <table className="min-w-full bg-white">
             <thead>
               <tr>
-                <th className="py-2 px-4 border">Result Type</th>
+                <th className="py-2 px-4 border">Patient Type</th>
                 <th className="py-2 px-4 border">Male</th>
                 <th className="py-2 px-4 border">Female</th>
               </tr>
@@ -174,7 +174,7 @@ const ViewReport = () => {
               </tr>
               <tr>
                 <td className="py-2 px-4 border">
-                  Between 5 years and 19 years
+                  Other Patients
                 </td>
                 <td className="py-2 px-4 border text-center">
                   {data.male?.between5and19years || "0"}

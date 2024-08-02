@@ -52,7 +52,7 @@ const ChooseHospital = () => {
   return (
     <div className="pt-10 pl-4 pr-4">
       <div className="flex justify-between items-center mb-4">
-        <h1 className="text-xl">Choose Hospital</h1>
+        <h1 className="text-xl">Choose Health Center</h1>
         <div className="flex gap-2">
           <input
             type="text"
@@ -66,7 +66,7 @@ const ChooseHospital = () => {
             className="text-sm bg-blue-500 hover:bg-blue-700 text-white py-1 px-2 rounded focus:outline-none focus:shadow-outline"
             onClick={handleViewAll}
           >
-            View All Hospitals
+            View All Health Center
           </button>
         </div>
       </div>

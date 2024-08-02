@@ -64,6 +64,10 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.ENUM("root", "admin"),
         allowNull: false,
       },
+      checkNumber:{
+        type: DataTypes.INTEGER,
+        allowNull: true,
+      }
     },
     {
       hooks: {
