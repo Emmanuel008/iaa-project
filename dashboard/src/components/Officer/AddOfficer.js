@@ -177,7 +177,7 @@ const AddOfficer = () => {
                         <option disabled value="">
                           Select User Role
                         </option>
-                        <option value="admin">In Charge Officer</option>
+                        <option value="admin">Health Officer</option>
                       </select>
                     </div>
                   </div>
