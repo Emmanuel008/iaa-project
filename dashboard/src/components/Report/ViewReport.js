@@ -46,12 +46,14 @@ const ViewReport = () => {
           await axios
             .get(`${url}/stats/malnutrition/${id}/${reportType}`)
             .then((res) => {
+              console.log(res.data)
               setData(res.data);
             });
         } else {
           await axios
             .get(`${url}/stats/malnutrition/${reportType}`)
             .then((res) => {
+              console.log(res.data);
               setData(res.data);
             });
         }

@@ -30,9 +30,12 @@ const AdmitPatient = () => {
      return "5 - 9 years";
    } else if (age >= 10 && age <= 15) {
      return "10 - 15 years";
-   } else if (age > 15) {
+   } else if (age > 15 && age <= 44) {
      return "15+ years";
-   } else {
+   }else if(age >= 45){
+    return "45+ years"
+   }
+    else {
      return "Below 6 months";
    }
  };
@@ -223,7 +226,13 @@ const AdmitPatient = () => {
                         onChange={handleChange}
                       >
                         <option>Select Type of pateint</option>
-                        <option value={category}>{category}</option>
+                        <option
+                          value={
+                            category === "45+ years" ? "15+ years" : category
+                          }
+                        >
+                          {category}
+                        </option>
                         {data.pregnancy && (
                           <>
                             <option value="Preganant Women">

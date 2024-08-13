@@ -2,6 +2,7 @@ import axios from 'axios';
 import React, {useState, useEffect} from 'react'
 import {useNavigate } from "react-router-dom";
 import { url } from '../../Utills/API';
+import moment from "moment"
 
 
 const AdmitedPatient = () => {
@@ -99,40 +100,51 @@ const AdmitedPatient = () => {
               </tr>
             </thead>
             <tbody>
-              {currentRows.map((row, index) => (
-                <tr
-                  key={index}
-                  className={`border-b hover:bg-orange-100 ${
-                    index % 2 === 0 ? "bg-gray-100" : ""
-                  }`}
-                >
-                  <td className="p-3 px-5">
-                    {`${row.patient.first_name} ${row.patient.last_name}`}
-                  </td>
-                  <td className="p-3 px-5">{row.patient_card_no}</td>
-                  <td className="p-3 px-5">
-                    {new Date(row.createdAt).toLocaleString()}
-                  </td>
-                  <td className="p-3 px-5">{row.admiting_status}</td>
-                  <td className="p-3 px-5">{row.patient_type}</td>
-                  <td className="p-3 px-5 flex">
-                    <button
-                      type="button"
-                      onClick={() => handleAdmit(row)}
-                      className="mr-2 text-sm bg-blue-500 hover:bg-blue-700 text-white py-1 px-2 rounded focus:outline-none focus:shadow-outline"
-                    >
-                      Test
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => openDeleteModal(row)}
-                      className="text-sm bg-red-500 hover:bg-red-700 text-white py-1 px-2 rounded focus:outline-none focus:shadow-outline"
-                    >
-                      Delete
-                    </button>
-                  </td>
-                </tr>
-              ))}
+              {currentRows.map((row, index) => {
+                const birthdate = moment(row.patient.birth_date);
+                const currentDate = moment();
+
+                // Calculate age in years
+                const ageByYear = currentDate.diff(birthdate, "years");
+                console.log(ageByYear);
+                return (
+                  <tr
+                    key={index}
+                    className={`border-b hover:bg-orange-100 ${
+                      index % 2 === 0 ? "bg-gray-100" : ""
+                    }`}
+                  >
+                    <td className="p-3 px-5">
+                      {`${row.patient.first_name} ${row.patient.last_name}`}
+                    </td>
+                    <td className="p-3 px-5">{row.patient_card_no}</td>
+                    <td className="p-3 px-5">
+                      {new Date(row.createdAt).toLocaleString()}
+                    </td>
+                    <td className="p-3 px-5">{row.admiting_status}</td>
+                    <td className="p-3 px-5">
+                      {ageByYear > 45 ? "45+ years" : row.patient_type}
+                    </td>
+                    <td className="p-3 px-5 flex">
+                      <button
+                        type="button"
+                        onClick={() => handleAdmit(row)}
+                        className="mr-2 text-sm bg-blue-500 hover:bg-blue-700 text-white py-1 px-2 rounded focus:outline-none focus:shadow-outline"
+                      >
+                        Test
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => openDeleteModal(row)}
+                        className="text-sm bg-red-500 hover:bg-red-700 text-white py-1 px-2 rounded focus:outline-none focus:shadow-outline"
+                      >
+                        Delete
+                      </button>
+                    </td>
+                  </tr>
+                );
+              }
+              )}
             </tbody>
           </table>
         </div>
