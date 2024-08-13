@@ -341,7 +341,7 @@ const EditModal = ({ show, onClose, onSubmit, initialData }) => {
   return (
     <div className="fixed inset-0 flex items-center justify-center  bg-black bg-opacity-50">
       <div className="bg-white p-4 rounded  w-96 shadow-lg">
-        <h2 className="text-lg mb-4">Edit Hospital</h2>
+        <h2 className="text-lg mb-4">Edit Health Center</h2>
         <form onSubmit={handleSubmit}>
           <div className="mb-4">
             <label className="block text-sm font-medium text-gray-700">
