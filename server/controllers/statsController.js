@@ -123,6 +123,7 @@ exports.getMalnutritionStats = async (req, res) => {
   try {
     const malnutritionType = req.params.malnutritionType;
     const hospitalId = req.params.id;
+    console.log(malnutritionType);
 
     // Define age ranges
     const ageRanges = [
@@ -152,6 +153,8 @@ exports.getMalnutritionStats = async (req, res) => {
     });
 
     const whereClause = hospitalId ? { hospital_id: hospitalId } : {};
+    const d = await Patient.findAll();
+    // console.log(d)
     const results = await Patient.findAll({
       where: whereClause,
       include: [
@@ -172,6 +175,7 @@ exports.getMalnutritionStats = async (req, res) => {
         },
       ],
     });
+    console.log(results)
 
     const stats = {
       male: {
