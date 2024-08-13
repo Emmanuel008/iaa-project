@@ -322,86 +322,6 @@ exports.createResults = async (req, res) => {
 
       const bmi = (10000 * weight) / (height * height);
 
-      const closestRow = await BMIAge.findOne({
-        where: { age: ageInMonths, gender: Test.patient.gender },
-      });
-
-      if (Object.keys(closestRow).length > 0 && ageInMonths <= 228) {
-        const row = closestRow;
-        const sdCategories = {
-          neg3sd: Math.abs(bmi - row.neg3sd),
-          neg2sd: Math.abs(bmi - row.neg2sd),
-          neg1sd: Math.abs(bmi - row.neg1sd),
-          sd0: Math.abs(bmi - row.sd0),
-          sd1: Math.abs(bmi - row.sd1),
-          sd2: Math.abs(bmi - row.sd2),
-          sd3: Math.abs(bmi - row.sd3),
-        };
-
-        const closestSD = Object.keys(sdCategories).reduce((a, b) =>
-          sdCategories[a] < sdCategories[b] ? a : b
-        );
-        switch (closestSD) {
-          case "neg3sd":
-            await Results.create({
-              result: "severe",
-              typeOfTest: "Wasting",
-              typeOfTestUsed: "BMI",
-              admit_id: parseInt(id),
-            });
-            break;
-          case "neg2sd":
-            await Results.create({
-              result: "moderate",
-              typeOfTest: "Wasting",
-              typeOfTestUsed: "BMI",
-              admit_id: parseInt(id),
-            });
-            break;
-          case "neg1sd":
-            await Results.create({
-              result: "mild",
-              typeOfTest: "Wasting",
-              typeOfTestUsed: "BMI",
-              admit_id: parseInt(id),
-            });
-            break;
-          case "sd0":
-            await Results.create({
-              result: "normal",
-              typeOfTest: "No Malnutrition",
-              typeOfTestUsed: "BMI",
-              admit_id: parseInt(id),
-            });
-            break;
-          case "sd1":
-            await Results.create({
-              result: "mild",
-              typeOfTest: "Overweight",
-              typeOfTestUsed: "BMI",
-              admit_id: parseInt(id),
-            });
-            break;
-          case "sd2":
-            await Results.create({
-              result: "moderate",
-              typeOfTest: "Obesity",
-              typeOfTestUsed: "BMI",
-              admit_id: parseInt(id),
-            });
-            break;
-          case "sd3":
-            await Results.create({
-              result: "severe",
-              typeOfTest: "Obesity",
-              typeOfTestUsed: "BMI",
-              admit_id: parseInt(id),
-            });
-            break;
-          default:
-            break;
-        }
-      }
       if (ageInMonths > 228) {
         if (bmi < 16) {
           await Results.create({
@@ -452,6 +372,87 @@ exports.createResults = async (req, res) => {
             typeOfTestUsed: "BMI",
             admit_id: parseInt(id),
           });
+        }
+      }else {
+        const closestRow = await BMIAge.findOne({
+          where: { age: ageInMonths, gender: Test.patient.gender },
+        });
+
+        if (Object.keys(closestRow).length > 0 && ageInMonths <= 228) {
+          const row = closestRow;
+          const sdCategories = {
+            neg3sd: Math.abs(bmi - row.neg3sd),
+            neg2sd: Math.abs(bmi - row.neg2sd),
+            neg1sd: Math.abs(bmi - row.neg1sd),
+            sd0: Math.abs(bmi - row.sd0),
+            sd1: Math.abs(bmi - row.sd1),
+            sd2: Math.abs(bmi - row.sd2),
+            sd3: Math.abs(bmi - row.sd3),
+          };
+
+          const closestSD = Object.keys(sdCategories).reduce((a, b) =>
+            sdCategories[a] < sdCategories[b] ? a : b
+          );
+          switch (closestSD) {
+            case "neg3sd":
+              await Results.create({
+                result: "severe",
+                typeOfTest: "Wasting",
+                typeOfTestUsed: "BMI",
+                admit_id: parseInt(id),
+              });
+              break;
+            case "neg2sd":
+              await Results.create({
+                result: "moderate",
+                typeOfTest: "Wasting",
+                typeOfTestUsed: "BMI",
+                admit_id: parseInt(id),
+              });
+              break;
+            case "neg1sd":
+              await Results.create({
+                result: "mild",
+                typeOfTest: "Wasting",
+                typeOfTestUsed: "BMI",
+                admit_id: parseInt(id),
+              });
+              break;
+            case "sd0":
+              await Results.create({
+                result: "normal",
+                typeOfTest: "No Malnutrition",
+                typeOfTestUsed: "BMI",
+                admit_id: parseInt(id),
+              });
+              break;
+            case "sd1":
+              await Results.create({
+                result: "mild",
+                typeOfTest: "Overweight",
+                typeOfTestUsed: "BMI",
+                admit_id: parseInt(id),
+              });
+              break;
+            case "sd2":
+              await Results.create({
+                result: "moderate",
+                typeOfTest: "Obesity",
+                typeOfTestUsed: "BMI",
+                admit_id: parseInt(id),
+              });
+              break;
+            case "sd3":
+              await Results.create({
+                result: "severe",
+                typeOfTest: "Obesity",
+                typeOfTestUsed: "BMI",
+                admit_id: parseInt(id),
+              });
+              break;
+            default:
+              break;
+          }
         }
       }
     }
